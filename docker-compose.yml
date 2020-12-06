@@ -1,0 +1,57 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:12
+    container_name: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: postgres
+    volumes:
+      #- db-data:/var/lib/postgresql/data
+      - ./postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
+
+  store:
+    container_name: store
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: builds/store.Dockerfile
+    ports:
+      - 8480:8480
+    depends_on:
+      - postgres
+  order:
+    container_name: order
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: builds/order.Dockerfile
+    ports:
+      - 8380:8380
+    depends_on:
+      - postgres
+
+  warehouse:
+    container_name: warehouse
+    restart: always
+    build:
+      context: .
+      dockerfile: builds/warehouse.Dockerfile
+    ports:
+      - 8280:8280
+    depends_on:
+      - postgres
+  warranty:
+    container_name: warranty
+    restart: always
+    build:
+      context: .
+      dockerfile: builds/warranty.Dockerfile
+    ports:
+      - 8180:8180
+    depends_on:
+      - postgres
